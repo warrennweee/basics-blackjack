@@ -70,6 +70,9 @@ var getHandSum = function(userHand) {
 
   while (index<userHand.length){
     var currentCard = userHand[index];
+    //var currentCard = {name: "Ace",
+        //suit:"♣︎",
+        //rank: 1,}
     if (currentCard.rank >=2 && currentCard.rank <=10){
       sum = sum + currentCard.rank;
     } else if (currentCard.rank >=11 && currentCard.rank <=13){
@@ -82,10 +85,10 @@ var getHandSum = function(userHand) {
      console.log(userHand)
   };
   if (sum > blackjackLimit && numAcesInHand > 0){
-  index = 0
-  while (index < numAcesInHand){
+  x = 0
+  while (x < numAcesInHand){
     sum = sum - 10
-    index +=1
+    x +=1
   if (sum <= blackjackLimit) {
   break;
 };
@@ -94,13 +97,18 @@ var getHandSum = function(userHand) {
 console.log(sum);
 return sum;
 };
+
+
 // The user decides whether to hit or stand, using the submit button to submit their choice.
 // The user's cards are analysed for winning or losing conditions.
 // The computer decides to hit or stand automatically based on game rules.
 // The game either ends or continues.
 var MODE_DEAL_CARDS = "deal and display player cards and 1 computer card";
-var MODE_HIT_OR_STAND = "get another card or stay"
+var MODE_HIT_OR_STAND = "get another card or stay";
 var MODE_COMPARE_CARD_SUM = "compare sum";
+var MODE_RESET = "reset game";
+var MODE_RESET2 = "reset game 2";
+var MODE_RESET3 = "reset game 3";
 var mode = MODE_DEAL_CARDS;
 
 
@@ -111,28 +119,35 @@ var printCardsInHand = function(userHand){
   }
 return cardsInHandString
 };
-
-
+bettingCounter = 100
+winCounter = 0
+lossCounter =0
 var playerHandSum = 0
 var computerStandLimit = 16
 var computerHandSum = 0
 var playerStandLimit = 16
+var winningImage = '<iframe src="https://giphy.com/embed/LdOyjZ7io5Msw" width="200" height="200" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>'
+var losingImage = '<iframe src="https://giphy.com/embed/mYNnMs1fZHmMM" width="200" height="200" frameBorder="0" class="giphy-embed" allowFullScreen></iframe>'
 var main = function (input) {
+
 // Deal cards
 if (mode == MODE_DEAL_CARDS) {
 // Show player cards and first computer card
 // Ask player whether they want to hit or stand
   dealCard(deck);
   playerHandSum = getHandSum(playerHand);
+  console.log(playerHandSum)
   computerHandSum = getHandSum(computerHand);
-  var myOutputValue = `Your cards are ${playerHand[0].name}, ${playerHand[1].name} with a total of ${playerHandSum} and first computer card is ${computerHand[0].name}. <br><br> Do you want to Hit or Stand? Type your answer and Submit`;
+  var myOutputValue = `Your cards are ${playerHand[0].name} ${playerHand[0].suit}, ${playerHand[1].name} ${playerHand[1].suit} which gives a total score of ${playerHandSum}. Your first computer card is ${computerHand[0].name} ${computerHand[0].suit} <br><br> Do you want to Hit or Stand? Type your answer and Submit`;
   mode = MODE_HIT_OR_STAND;
 // If Hit, deal another card to player and check player hand sum
 } else if (mode == MODE_HIT_OR_STAND){
+  if(input != `hit` || input != `stand`)
+  myOutputValue = `please type in either "hit" or "stand"`
   if (input == 'hit'){
     playerHand.push(deck.pop());
     playerHandSum = getHandSum(playerHand);
-        console.log(playerHandSum)
+        console.log(playerHandSum);
         console.log(blackjackLimit);
         console.log(playerHand);
 
@@ -142,13 +157,15 @@ if (mode == MODE_DEAL_CARDS) {
     mode = MODE_HIT_OR_STAND;
 // If > than 21, Game over
     } else if (playerHandSum > blackjackLimit){
-      myOutputValue = `Your card total is ${playerHandSum}. Game over!`;
+      //myOutputValue = `Your card total is ${playerHandSum}. Game over!`;
+      mode=MODE_RESET;
     }
 // If player chooses to Stand, check computer Hand.
-// If less than 16, draw another card.
+// If less than 16, the player will be asked to Hit.
   } else if (input ==`stand` && playerHandSum < playerStandLimit){
     myOutputValue = `Your card score will need to be more than 16! Your cards are ${printCardsInHand(playerHand)} with a total of ${playerHandSum}. <br><br> hit?`;
     }
+// If player chooses to Stand, check computer Hand.
     else if (input == 'stand'){
     for(var index = 0; index<= computerHand.length; index+=1){
 
@@ -159,20 +176,67 @@ if (mode == MODE_DEAL_CARDS) {
         console.log(computerHandSum);
 // If computer hand sum is greater than 21, player automatically wins.
         if (computerHandSum > blackjackLimit){
-        myOutputValue = `Your cards are ${printCardsInHand(playerHand)} with a total of ${playerHandSum}.<br><br> Computer's cards are ${printCardsInHand(computerHand)} with a total of ${computerHandSum}. <br><br> Congratulations, Player wins! <p> Refresh the page to restart the game`;
+        bettingCounter += 20;
+        winCounter += 1
+        myOutputValue = `${winningImage}<br>Your cards are ${printCardsInHand(playerHand)} with a total of ${playerHandSum}.<br><br> Computer's cards are ${printCardsInHand(computerHand)} with a total of ${computerHandSum}. <br><br> 😃 Congratulations, Player wins!; you've $${bettingCounter.toFixed(0)} <br> Win Counter: ${winCounter.toFixed(0)} <br> Loss Counters: ${lossCounter.toFixed(0)}!`;
+        mode=MODE_RESET2;
         };
-// If more than 17, Computer automatically stands.
+// If more than 16, Computer automatically stands.
 // Compare player hand and computer hand to determine winner.
     } else if(computerHandSum > computerStandLimit){
       if (playerHandSum > computerHandSum){
-        myOutputValue = `Your cards are ${printCardsInHand(playerHand)} with a total of ${playerHandSum}.<br><br> Computer's cards are ${printCardsInHand(computerHand)} with a total of ${computerHandSum}. <br><br> 😃 Congratulations, Player wins! <p> Refresh the page to restart the game`;
+
+// Spent a good 1hr on this betting counter and I have honestly no idea how this works..
+        bettingCounter = bettingCounter+ (20/3);
+        winCounter += (1/3)
+        myOutputValue = `${winningImage}<br>Your cards are ${printCardsInHand(playerHand)} with a total of ${playerHandSum}.<br><br> Computer's cards are ${printCardsInHand(computerHand)} with a total of ${computerHandSum}. <br><br> 😃 Congratulations, Player wins!; you've $${bettingCounter.toFixed(0)} <br> Win Counters: ${winCounter.toFixed(0)} <br> Loss Counters: ${lossCounter.toFixed(0)}!`
+        mode=MODE_RESET2;
       } else if (playerHandSum < computerHandSum && computerHandSum <= blackjackLimit){
-        myOutputValue = `Your cards are ${printCardsInHand(playerHand)} with a total of ${playerHandSum}.<br><br> Computer's cards are ${printCardsInHand(computerHand)} with a total of ${computerHandSum}. <br><br> 😢, Computer wins <p> Refresh the page to restart the game`;
+        bettingCounter = bettingCounter - 20/3;
+        lossCounter +=1/3
+        myOutputValue = `${losingImage}<br>Your cards are ${printCardsInHand(playerHand)} with a total of ${playerHandSum}.<br><br> Computer's cards are ${printCardsInHand(computerHand)} with a total of ${computerHandSum}. <br><br> 😢, Computer wins; you're left with $${bettingCounter.toFixed(0)} <br> Win Counters: ${winCounter.toFixed(0)} <br> Loss Counters: ${lossCounter.toFixed(0)}! <br> Click play to start again`
+        mode=MODE_RESET3;
       };
     }
     }
   }
 }
+// if mode is mode reset, remove all the cards on hand and computer hand, and produce different outputmessage depending on condition
+if((mode==MODE_RESET||mode==MODE_RESET2||mode==MODE_RESET3) && bettingCounter==0){
+  myOutputValue = `You have currently $0 and is unable to carry on the game`
+}
+else if(mode==MODE_RESET){
+   bettingCounter -= 20;
+   lossCounter +=1
+   console.log(bettingCounter)
+myOutputValue = `${losingImage}<br>Your card total is ${playerHandSum}. Busted! <br> You're left with $${bettingCounter.toFixed(0)}! <br> Win Counters: ${winCounter.toFixed(0)} <br> Loss Counters: ${lossCounter.toFixed(0)}! <br> Click play to start again`
+while(playerHand.length > 0) {
+    playerHand.pop();
+}
+while(computerHand.length>0) {
+    computerHand.pop();
+}
+mode = MODE_DEAL_CARDS;
+};
+if(mode==MODE_RESET2){
+while(playerHand.length > 0) {
+    playerHand.pop();
+}
+while(computerHand.length>0) {
+    computerHand.pop();
+}
+mode = MODE_DEAL_CARDS;
+};
+if(mode==MODE_RESET3){
+while(playerHand.length > 0) {
+    playerHand.pop();
+}
+while(computerHand.length>0) {
+    computerHand.pop();
+}
+mode = MODE_DEAL_CARDS;
+};
+
   return myOutputValue;
 };
 
